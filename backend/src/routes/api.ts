@@ -4,6 +4,7 @@ import authController from "../controllers/auth-controller";
 import { validate } from "../middlewares/validate";
 import authMiddleware from "../middlewares/auth-middleware";
 import {
+  activationCodeSchema,
   loginValidateSchema,
   registerValidateSchema,
 } from "../validations/auth-validation.js";
@@ -15,8 +16,12 @@ router.post(
   validate(registerValidateSchema),
   authController.register,
 );
-
 router.post("/auth/login", validate(loginValidateSchema), authController.login);
 router.get("/auth/me", authMiddleware, authController.me);
+router.post(
+  "/auth/activation",
+  validate(activationCodeSchema),
+  authController.activationAccount,
+);
 
 export default router;

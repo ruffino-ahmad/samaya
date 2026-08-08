@@ -2,7 +2,11 @@ import type { Request, Response } from "express";
 
 import authService from "../services/auth-services.js";
 
-import { type TLogin, type TRegister } from "../validations/auth-validation.js";
+import {
+  type TActivationCode,
+  type TLogin,
+  type TRegister,
+} from "../validations/auth-validation.js";
 import type { IReqUser } from "../middlewares/auth-middleware.js";
 
 const register = async (req: Request, res: Response) => {
@@ -44,4 +48,15 @@ const me = async (req: IReqUser, res: Response) => {
   });
 };
 
-export default { register, login, me };
+const activationAccount = async (req: Request, res: Response) => {
+  const { activationCode } = req.body as TActivationCode;
+
+  const user = await authService.activationAccount(activationCode);
+
+  res.status(200).json({
+    message: "Account activation successful",
+    data: user,
+  });
+};
+
+export default { register, login, me, activationAccount };

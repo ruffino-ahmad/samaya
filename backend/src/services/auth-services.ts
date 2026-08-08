@@ -1,9 +1,11 @@
 import UserModel from "../models/user-model.js";
 import type { TCreateUser, TLogin } from "../validations/auth-validation.js";
 import { comparePassword, hashPassword } from "../utils/hash.js";
-import { AppError, Errors } from "ds-express-errors";
+import { Errors } from "ds-express-errors";
 import { generateAccessToken } from "../utils/jwt.js";
-import type { IReqUser } from "../middlewares/auth-middleware.js";
+import { encryptActivationCode } from "../utils/crypto.js";
+import { APP_BASE_URL } from "../utils/env.js";
+import queueClient from "../config/queueClient.js";
 
 const register = async (payload: TCreateUser) => {
   const { fullname, username, email, password } = payload;
@@ -15,12 +17,27 @@ const register = async (payload: TCreateUser) => {
 
   const hashedPassword = await hashPassword(password);
 
+  const activationCode = encryptActivationCode();
+  const activationCodeExpires = new Date(
+    Date.now() + 24 * 60 * 60 * 1000,
+  ).toISOString(); // Expires in 24 hours
+
   const result = await UserModel.create({
     fullname,
     username,
     email,
     password: hashedPassword,
+    activationCode,
+    activationCodeExpires,
   });
+
+  const activationLink = `${APP_BASE_URL}/auth/activation?code=${activationCode}`;
+  const payloadEmail = { toEmail: email, activationLink };
+  const messageText = Buffer.from(JSON.stringify(payloadEmail)).toString(
+    "base64",
+  );
+
+  await queueClient.sendMessage(messageText);
 
   return result;
 };
@@ -64,4 +81,31 @@ const me = async (id: string) => {
   return result;
 };
 
-export default { register, login, me };
+const activationAccount = async (activationCode: string) => {
+  const user = await UserModel.findOneAndUpdate(
+    {
+      activationCode,
+      activationCodeExpires: { $gt: new Date() },
+    },
+    {
+      $set: {
+        isActive: true,
+      },
+      $unset: {
+        activationCode: "",
+        activationCodeExpires: "",
+      },
+    },
+    {
+      returnDocument: "after",
+    },
+  );
+
+  if (!user) {
+    throw Errors.BadRequest("Invalid or expired activation code");
+  }
+
+  return user;
+};
+
+export default { register, login, me, activationAccount };

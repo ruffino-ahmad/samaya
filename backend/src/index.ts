@@ -1,7 +1,10 @@
+import "./lib/zod-extend";
 import express from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 
 import router from "./routes/api";
+import docs from "./docs/route";
 
 import {
   setConfig,
@@ -13,6 +16,7 @@ import {
 
 import connectToDatabase from "./utils/database";
 import { PORT } from "./utils/env.js";
+import { setupErrorHandling } from "./config/error-config.js";
 
 async function startServer() {
   try {
@@ -21,27 +25,12 @@ async function startServer() {
     console.log("Database status:", result);
 
     // SET UP ERROR HANDLING
-    setConfig({
-      needMappers: ["zod", "mongoose"],
-      devEnvironments: ["development", "local"],
-
-      formatError: (error, { req, isDev }) => ({
-        status:
-          error instanceof AppError && error.isOperational ? "fail" : "error",
-        message: error.message,
-        ...(isDev
-          ? {
-              method: req.method,
-              url: req.originalUrl,
-              stack: error.stack,
-            }
-          : {}),
-      }),
-    });
+    setupErrorHandling();
 
     // SET UP EXPRESS APP
     const app = express();
 
+    app.use(cors());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
@@ -53,8 +42,13 @@ async function startServer() {
     });
 
     app.use("/api", router);
+    docs(app);
 
     app.use(errorHandler);
+
+    if (process.env.NODE_ENV !== "production") {
+      docs(app);
+    }
 
     const server = app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

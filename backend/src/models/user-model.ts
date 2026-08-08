@@ -9,6 +9,7 @@ export interface User {
   profilePicture: string;
   isActive: boolean;
   activationCode: string;
+  activationCodeExpires: Date;
 }
 
 const UserSchema = new mongoose.Schema<User>(
@@ -47,6 +48,9 @@ const UserSchema = new mongoose.Schema<User>(
     activationCode: {
       type: String,
     },
+    activationCodeExpires: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -60,6 +64,6 @@ UserSchema.methods.toJSON = function () {
   return user;
 };
 
-const UserModel = mongoose.model("User", UserSchema);
+const UserModel = mongoose.model<User>("User", UserSchema);
 
 export default UserModel;
