@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import type { Types } from "mongoose";
-import type { User } from "../models/user-model.js";
+import type { User } from "../modules/user/user-model.js";
 import { ACCESS_TOKEN_SECRET } from "./env.js";
 
 export interface IUserToken extends Omit<

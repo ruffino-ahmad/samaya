@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ROLES } from "../../utils/constant.js";
 
 export interface User {
   fullname: string;
@@ -34,8 +35,8 @@ const UserSchema = new mongoose.Schema<User>(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: [ROLES.ADMIN, ROLES.MEMBER],
+      default: ROLES.MEMBER,
     },
     profilePicture: {
       type: String,

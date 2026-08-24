@@ -1,16 +1,17 @@
 import type { Request, Response } from "express";
 
-import authService from "../services/auth-services.js";
+import authService from "./auth-services.js";
 
 import {
-  type TActivationCode,
-  type TLogin,
-  type TRegister,
-} from "../validations/auth-validation.js";
-import type { IReqUser } from "../middlewares/auth-middleware.js";
+  type ActivationCodeInput,
+  type LoginInput,
+  type RegisterInput,
+} from "./auth-validation.js";
+import type { IReqUser } from "../../middlewares/auth-middleware.js";
+import sendResponse, { HTTPStatusCode } from "../../utils/response.js";
 
 const register = async (req: Request, res: Response) => {
-  const { fullname, username, email, password } = req.body as TRegister;
+  const { fullname, username, email, password } = req.body as RegisterInput;
 
   const result = await authService.register({
     fullname,
@@ -19,21 +20,23 @@ const register = async (req: Request, res: Response) => {
     password,
   });
 
-  res.status(200).json({
+  return sendResponse(res, {
+    statusCode: HTTPStatusCode.CREATED,
     message: "Register validation successful",
     data: result,
   });
 };
 
 const login = async (req: Request, res: Response) => {
-  const { identifier, password } = req.body as TLogin;
+  const { identifier, password } = req.body as LoginInput;
 
   const result = await authService.login({
     identifier,
     password,
   });
 
-  res.status(200).json({
+  return sendResponse(res, {
+    statusCode: HTTPStatusCode.OK,
     message: "Login validation successful",
     data: result,
   });
@@ -42,18 +45,20 @@ const login = async (req: Request, res: Response) => {
 const me = async (req: IReqUser, res: Response) => {
   const result = await authService.me(req.user?.id?.toString() ?? "");
 
-  res.status(200).json({
+  return sendResponse(res, {
+    statusCode: HTTPStatusCode.OK,
     message: "Get User Profile successful",
     data: result,
   });
 };
 
 const activationAccount = async (req: Request, res: Response) => {
-  const { activationCode } = req.body as TActivationCode;
+  const { activationCode } = req.body as ActivationCodeInput;
 
   const user = await authService.activationAccount(activationCode);
 
-  res.status(200).json({
+  return sendResponse(res, {
+    statusCode: HTTPStatusCode.OK,
     message: "Account activation successful",
     data: user,
   });

@@ -1,27 +1,13 @@
 import express from "express";
 
-import authController from "../controllers/auth-controller";
-import { validate } from "../middlewares/validate";
-import authMiddleware from "../middlewares/auth-middleware";
-import {
-  activationCodeSchema,
-  loginValidateSchema,
-  registerValidateSchema,
-} from "../validations/auth-validation.js";
+import authRoutes from "../modules/authentication/auth-routes";
+import categoryRoutes from "../modules/category/category-routes";
+import uploadRoutes from "../modules/upload/upload.routes";
 
 const router = express.Router();
 
-router.post(
-  "/auth/register",
-  validate(registerValidateSchema),
-  authController.register,
-);
-router.post("/auth/login", validate(loginValidateSchema), authController.login);
-router.get("/auth/me", authMiddleware, authController.me);
-router.post(
-  "/auth/activation",
-  validate(activationCodeSchema),
-  authController.activationAccount,
-);
+router.use("/auth", authRoutes);
+router.use("/categories", categoryRoutes);
+router.use("/uploads", uploadRoutes);
 
 export default router;

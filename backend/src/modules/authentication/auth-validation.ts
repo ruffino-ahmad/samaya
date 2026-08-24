@@ -91,7 +91,7 @@ export const errorResponseSchema = z
   })
   .openapi("ErrorResponse");
 
-export type TRegister = z.infer<typeof registerValidateSchema>;
-export type TCreateUser = Omit<TRegister, "confirmPassword">;
-export type TLogin = z.infer<typeof loginValidateSchema>;
-export type TActivationCode = z.infer<typeof activationCodeSchema>;
+export type RegisterInput = z.infer<typeof registerValidateSchema>;
+export type CreateUserInput = Omit<RegisterInput, "confirmPassword">;
+export type LoginInput = z.infer<typeof loginValidateSchema>;
+export type ActivationCodeInput = z.infer<typeof activationCodeSchema>;

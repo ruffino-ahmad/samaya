@@ -1,13 +1,13 @@
-import UserModel from "../models/user-model.js";
-import type { TCreateUser, TLogin } from "../validations/auth-validation.js";
-import { comparePassword, hashPassword } from "../utils/hash.js";
+import UserModel from "../user/user-model.js";
+import type { CreateUserInput, LoginInput } from "./auth-validation.js";
+import { comparePassword, hashPassword } from "../../utils/hash.js";
 import { Errors } from "ds-express-errors";
-import { generateAccessToken } from "../utils/jwt.js";
-import { encryptActivationCode } from "../utils/crypto.js";
-import { APP_BASE_URL } from "../utils/env.js";
-import queueClient from "../config/queueClient.js";
+import { generateAccessToken } from "../../utils/jwt.js";
+import { encrypActivationCodeInput } from "../../utils/crypto.js";
+import { APP_BASE_URL } from "../../utils/env.js";
+import queueClient from "../../config/queueClient.js";
 
-const register = async (payload: TCreateUser) => {
+const register = async (payload: CreateUserInput) => {
   const { fullname, username, email, password } = payload;
 
   const existingUser = await UserModel.findOne({ email });
@@ -17,7 +17,7 @@ const register = async (payload: TCreateUser) => {
 
   const hashedPassword = await hashPassword(password);
 
-  const activationCode = encryptActivationCode();
+  const activationCode = encrypActivationCodeInput();
   const activationCodeExpires = new Date(
     Date.now() + 24 * 60 * 60 * 1000,
   ).toISOString(); // Expires in 24 hours
@@ -37,12 +37,13 @@ const register = async (payload: TCreateUser) => {
     "base64",
   );
 
+  // Tambahankan fitur kalau gagal, jangan sampai error, masuk ke try-catch dulu
   await queueClient.sendMessage(messageText);
 
   return result;
 };
 
-const login = async (payload: TLogin) => {
+const login = async (payload: LoginInput) => {
   const { identifier, password } = payload;
 
   const userByIdentifier = await UserModel.findOne({
