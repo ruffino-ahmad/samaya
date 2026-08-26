@@ -1,3 +1,4 @@
+import "../lib/zod-extend";
 import { z } from "zod";
 import {
   OpenAPIRegistry,
@@ -12,6 +13,20 @@ import {
   confirmUploadSchema,
   requestUploadUrlSchema,
 } from "../modules/upload/upload.validation";
+import {
+  categoryQuerySchema,
+  createCategorySchema,
+  updateCategorySchema,
+} from "../modules/category/category-validation";
+import {
+  createEventSchema,
+  eventQuerySchema,
+  updateEventSchema,
+} from "../modules/event/event-validation";
+import {
+  idParamsSchema,
+  slugParamSchema,
+} from "../validations/common-validation";
 
 const registry = new OpenAPIRegistry();
 
@@ -97,6 +112,106 @@ const confirmUploadResponseSchema = z
     }),
   })
   .openapi("ConfirmUploadResponse");
+
+const paginationMetaSchema = z
+  .object({
+    page: z.number().openapi({ example: 1 }),
+    limit: z.number().openapi({ example: 10 }),
+    totalItems: z.number().openapi({ example: 25 }),
+    totalPages: z.number().openapi({ example: 3 }),
+    hashNextPage: z.boolean().openapi({ example: true }),
+    hashPrevPage: z.boolean().openapi({ example: false }),
+  })
+  .openapi("PaginationMeta");
+
+const categorySchema = z
+  .object({
+    _id: z.string().openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
+    name: z.string().openapi({ example: "Concert" }),
+    description: z
+      .string()
+      .openapi({ example: "Events and live musical performances" }),
+    icon: z.string().openapi({ example: "music" }),
+    createdAt: z.string().datetime().optional(),
+    updatedAt: z.string().datetime().optional(),
+  })
+  .openapi("Category");
+
+const categoryResponseSchema = (
+  message: string,
+  name: string,
+  data: z.ZodType,
+) =>
+  z
+    .object({
+      success: z.literal(true).openapi({ example: true }),
+      message: z.string().openapi({ example: message }),
+      data,
+    })
+    .openapi(name);
+
+const categoryListResponseSchema = z
+  .object({
+    success: z.literal(true).openapi({ example: true }),
+    message: z
+      .string()
+      .openapi({ example: "Success find all category" }),
+    data: z.array(categorySchema),
+    meta: paginationMetaSchema,
+  })
+  .openapi("CategoryListResponse");
+
+const eventLocationResponseSchema = z
+  .object({
+    venueName: z.string().optional().openapi({ example: "Gelora Bung Karno" }),
+    address: z.string().optional().openapi({ example: "Jakarta Pusat" }),
+    province: z
+      .object({ id: z.string(), name: z.string() })
+      .optional(),
+    regency: z.object({ id: z.string(), name: z.string() }).optional(),
+    district: z.object({ id: z.string(), name: z.string() }).optional(),
+    village: z.object({ id: z.string(), name: z.string() }).optional(),
+    coordinates: z
+      .object({
+        lat: z.number().openapi({ example: -6.2088 }),
+        lng: z.number().openapi({ example: 106.8456 }),
+      })
+      .optional(),
+  })
+  .openapi("EventLocation");
+
+const eventSchema = z
+  .object({
+    _id: z.string().openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
+    name: z.string().openapi({ example: "Rock Fest 2026" }),
+    startDate: z.string().datetime(),
+    endDate: z.string().datetime(),
+    description: z
+      .string()
+      .openapi({ example: "Events and live musical performances" }),
+    banner: z.string().url().openapi({ example: "https://cdn.example.com/banner.jpg" }),
+    category: z
+      .union([z.string(), categorySchema])
+      .openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
+    slug: z.string().openapi({ example: "rock-fest-2026" }),
+    createdBy: z.union([z.string(), userSchema]),
+    isFeatured: z.boolean().openapi({ example: false }),
+    isOnline: z.boolean().openapi({ example: false }),
+    isPublish: z.boolean().openapi({ example: true }),
+    location: eventLocationResponseSchema.optional(),
+    createdAt: z.string().datetime().optional(),
+    updatedAt: z.string().datetime().optional(),
+  })
+  .openapi("Event");
+
+const eventListResponseSchema = z
+  .object({
+    success: z.literal(true).openapi({ example: true }),
+    message: z.string().openapi({ example: "Events retrieved successfully" }),
+    data: z.array(eventSchema),
+    meta: paginationMetaSchema,
+  })
+  .openapi("EventListResponse");
 
 const bearerSecurity = [{ bearerAuth: [] }];
 const jsonBody = (schema: z.ZodType) => ({
@@ -243,6 +358,360 @@ registry.registerPath({
   },
 });
 
+registry.registerPath({
+  method: "post",
+  path: "/categories",
+  tags: ["Category"],
+  summary: "Create a category",
+  security: bearerSecurity,
+  request: jsonBody(createCategorySchema),
+  responses: {
+    201: {
+      description: "Category created successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success create a category",
+            "CreateCategoryResponse",
+            categorySchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/categories",
+  tags: ["Category"],
+  summary: "Get all categories",
+  request: {
+    query: categoryQuerySchema,
+  },
+  responses: {
+    200: {
+      description: "Categories retrieved successfully",
+      content: { "application/json": { schema: categoryListResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/categories/{id}",
+  tags: ["Category"],
+  summary: "Get one category",
+  request: { params: idParamsSchema },
+  responses: {
+    200: {
+      description: "Category retrieved successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success find one category",
+            "FindCategoryResponse",
+            categorySchema,
+          ),
+        },
+      },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/categories/{id}",
+  tags: ["Category"],
+  summary: "Update a category",
+  security: bearerSecurity,
+  request: {
+    params: idParamsSchema,
+    ...jsonBody(updateCategorySchema),
+  },
+  responses: {
+    200: {
+      description: "Category updated successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success update category",
+            "UpdateCategoryResponse",
+            categorySchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/categories/{id}",
+  tags: ["Category"],
+  summary: "Delete a category",
+  security: bearerSecurity,
+  request: { params: idParamsSchema },
+  responses: {
+    200: {
+      description: "Category deleted successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success remove category",
+            "DeleteCategoryResponse",
+            z.null(),
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/events",
+  tags: ["Event"],
+  summary: "Create an event",
+  security: bearerSecurity,
+  request: jsonBody(createEventSchema),
+  responses: {
+    201: {
+      description: "Event created successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Event created successfully",
+            "CreateEventResponse",
+            eventSchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "Selected category does not exists",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    409: {
+      description: "An event with the exact same name and start date already exists",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/events",
+  tags: ["Event"],
+  summary: "Get all events",
+  request: {
+    query: eventQuerySchema,
+  },
+  responses: {
+    200: {
+      description: "Events retrieved successfully",
+      content: { "application/json": { schema: eventListResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/events/{id}",
+  tags: ["Event"],
+  summary: "Get one event",
+  request: { params: idParamsSchema },
+  responses: {
+    200: {
+      description: "Event retrieved successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success find one event",
+            "FindEventResponse",
+            eventSchema,
+          ),
+        },
+      },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/events/{slug}/slug",
+  tags: ["Event"],
+  summary: "Get one event by slug",
+  request: { params: slugParamSchema },
+  responses: {
+    200: {
+      description: "Event retrieved successfully by slug",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success find one event by slug",
+            "FindEventBySlugResponse",
+            eventSchema,
+          ),
+        },
+      },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "Event not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/events/{id}",
+  tags: ["Event"],
+  summary: "Update an event",
+  security: bearerSecurity,
+  request: {
+    params: idParamsSchema,
+    ...jsonBody(updateEventSchema),
+  },
+  responses: {
+    200: {
+      description: "Event updated successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success update event",
+            "UpdateEventResponse",
+            eventSchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "Event not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    409: {
+      description: "Another event with the exact same name and start date already exists",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/events/{id}",
+  tags: ["Event"],
+  summary: "Delete an event",
+  security: bearerSecurity,
+  request: { params: idParamsSchema },
+  responses: {
+    200: {
+      description: "Event deleted successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success remove event ",
+            "DeleteEventResponse",
+            eventSchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions);
   return generator.generateDocument({
@@ -259,6 +728,8 @@ export function generateOpenApiDocument() {
     tags: [
       { name: "Authentication", description: "User authentication endpoints" },
       { name: "Upload", description: "Azure Blob upload endpoints" },
+      { name: "Category", description: "Category management endpoints" },
+      { name: "Event", description: "Event management endpoints" },
     ],
   });
 }
