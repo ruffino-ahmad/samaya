@@ -29,6 +29,20 @@ export const idParamsSchema = z
   })
   .openapi("IdParamrequest");
 
+export const eventIdParamSchema = z
+  .object({
+    eventId: objectIdSchema.openapi({
+      param: {
+        name: "eventId",
+        in: "path",
+        required: true,
+        description: "Event MongoDB 24-character ObjectId",
+      },
+      example: "64f1a2b3c4d5e6f7g8h9i0j1",
+    }),
+  })
+  .openapi("EventIdParamRequest");
+
 export const slugParamSchema = z
   .object({
     slug: slugSchema.openapi({
@@ -44,4 +58,5 @@ export const slugParamSchema = z
   .openapi("SlugParamRequest");
 
 export type IdParamInput = z.infer<typeof idParamsSchema>;
+export type EventIdParamInput = z.infer<typeof eventIdParamSchema>;
 export type SlugParamInput = z.infer<typeof slugParamSchema>;
