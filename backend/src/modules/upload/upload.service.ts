@@ -11,8 +11,15 @@ import {
   AZURE_STORAGE_ACCOUNT_KEY,
   AZURE_BLOB_CONTAINER_NAME,
 } from "../../utils/env";
-import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE_BYTES } from "./upload.validation";
-import type { isValid } from "zod/v3";
+import {
+  ALLOWED_MIME_TYPES,
+  FOLDER_ROLE_PERMISSIONS,
+  MAX_FILE_SIZE_BYTES,
+  type UploadFoldertype,
+} from "./upload.validation";
+import path from "path";
+import type { ROLES } from "../../utils/constant";
+import { Errors } from "ds-express-errors";
 
 const blobServiceClient = BlobServiceClient.fromConnectionString(
   AZURE_STORAGE_CONNECTION_STRING,
@@ -34,6 +41,8 @@ export async function ensureContainerExists(): Promise<void> {
 interface GenerateUploadUrlParams {
   fileName: string;
   contentType: string;
+  folder: UploadFoldertype;
+  userRole: ROLES;
 }
 
 interface GenerateUploadUrlResult {
@@ -45,14 +54,20 @@ interface GenerateUploadUrlResult {
 const generateUploadUrl = async (
   params: GenerateUploadUrlParams,
 ): Promise<GenerateUploadUrlResult> => {
-  const { fileName, contentType } = params;
+  const { fileName, contentType, folder, userRole } = params;
 
-  const extention = fileName.split(".").pop();
-  const blobName = `${randomUUID()}.${extention}`;
+  const allowedRoles = FOLDER_ROLE_PERMISSIONS[folder];
+  if (!allowedRoles || !allowedRoles.includes(userRole)) {
+    throw Errors.Forbidden(
+      `Access denied. Your role '${userRole}' is not authorized to upload assets to the '${folder}' directory`,
+    );
+  }
+
+  const extention = path.extname(fileName).toLowerCase();
+  const blobName = `${folder}/${randomUUID()}${extention}`;
 
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-
-  const expiresOn = new Date(Date.now() + 5 * 6 * 1000); // 5 menit
+  const expiresOn = new Date(Date.now() + 5 * 60 * 1000); // 5 menit
 
   const sasToken = generateBlobSASQueryParameters(
     {
@@ -61,6 +76,7 @@ const generateUploadUrl = async (
       permissions: BlobSASPermissions.parse("cw"),
       expiresOn,
       contentType,
+      version: "2023-11-03",
     },
     sharedKeyCredential,
   ).toString();
@@ -83,7 +99,8 @@ function detectrealMimeType(buffer: Buffer): string | null {
     const matches = signature.every((byte, index) => buffer[index] === byte);
     if (matches) {
       if (mimeType === "image/webp") {
-        const isWebp = buffer.slice(8, 12).toString("ascii") === "WEBP";
+        const isWebp = buffer.subarray(8, 12).toString("ascii") === "WEBP";
+        return isWebp ? "image/webp" : null;
       }
       return mimeType;
     }
@@ -113,6 +130,13 @@ const validateUploadedBlob = async (
   const properties = await blockBlobClient.getProperties();
 
   const actualSize = properties.contentLength ?? 0;
+  if (actualSize < 16) {
+    await blockBlobClient.deleteIfExists();
+    return {
+      isValid: false,
+      reason: "File is corrupted or too small to be a valid image",
+    };
+  }
   if (actualSize > MAX_FILE_SIZE_BYTES) {
     await blockBlobClient.deleteIfExists();
     return {

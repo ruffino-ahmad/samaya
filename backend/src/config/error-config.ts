@@ -53,6 +53,7 @@ export function setupErrorHandling() {
       const isOperational = error instanceof AppError && error.isOperational;
 
       const base: any = {
+        success: false,
         code: statusCode,
         status: isOperational ? "fail" : "error",
         message: isDev

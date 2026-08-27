@@ -12,14 +12,14 @@ import {
 const router = express.Router();
 
 router.post(
-  "/uploads/request-url",
+  "/request-url",
   authMiddleware,
   validate(requestUploadUrlSchema),
   uploadController.requestUploadUrl,
 );
 
 router.post(
-  "/uploads/confirm",
+  "/confirm",
   authMiddleware,
   validate(confirmUploadSchema),
   uploadController.confirmUpload,
