@@ -1,22 +1,23 @@
 import type { Response } from "express";
 import type { IReqUser } from "../../middlewares/auth-middleware";
-import type { IEvent } from "./event-model";
+import type { IEvent } from "./event.model";
 import type {
   CreateEventInput,
   EventQueryInput,
   UpdateEventInput,
-} from "./event-validation";
-import eventService from "./event-service";
+} from "./event.validation";
+import eventService from "./event.service";
 import sendResponse, { HTTPStatusCode } from "../../utils/response";
 import type {
   IdParamInput,
   SlugParamInput,
 } from "../../validations/common-validation";
-import type { UpdateCategoryInput } from "../category/category-validation";
 
 const create = async (req: IReqUser, res: Response) => {
   const payload = req.body as CreateEventInput;
+
   const userId = req.user?.id as unknown as string;
+
   const result = await eventService.create({ payload, userId });
   return sendResponse(res, {
     statusCode: HTTPStatusCode.CREATED,
@@ -27,7 +28,9 @@ const create = async (req: IReqUser, res: Response) => {
 
 const findAll = async (req: IReqUser, res: Response) => {
   const query = req.query as unknown as EventQueryInput;
+
   const result = await eventService.findAll(query);
+
   return sendResponse(res, {
     statusCode: HTTPStatusCode.OK,
     message: "Events retrieved successfully",

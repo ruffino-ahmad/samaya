@@ -2,13 +2,13 @@ import express from "express";
 import authMiddleware from "../../middlewares/auth-middleware";
 import aclMiddleware from "../../middlewares/acl-middleware";
 import { ROLES } from "../../utils/constant";
-import eventController from "./event-controller";
+import eventController from "./event.controller";
 import { validate } from "../../middlewares/validate";
 import {
   createEventSchema,
   eventQuerySchema,
   updateEventSchema,
-} from "./event-validation";
+} from "./event.validation";
 import {
   idParamsSchema,
   slugParamSchema,

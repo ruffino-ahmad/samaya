@@ -22,11 +22,22 @@ import {
   createEventSchema,
   eventQuerySchema,
   updateEventSchema,
-} from "../modules/event/event-validation";
+} from "../modules/event/event.validation";
 import {
   idParamsSchema,
+  eventIdParamSchema,
   slugParamSchema,
 } from "../validations/common-validation";
+import {
+  createTicketSchema,
+  ticketQuerySchema,
+  updateTicketSchema,
+} from "../modules/ticket/ticket.validation";
+import {
+  bannerQuerySchema,
+  createBannerSchema,
+  updateBannerSchema,
+} from "../modules/banner/banner.validation";
 
 const registry = new OpenAPIRegistry();
 
@@ -43,6 +54,7 @@ const errorDetailSchema = z.object({
 
 const errorResponseSchema = z
   .object({
+    success: z.literal(false).openapi({ example: false }),
     code: z.number().openapi({ example: 422 }),
     status: z.enum(["fail", "error"]).openapi({ example: "fail" }),
     message: z.string().openapi({ example: "Validation failed" }),
@@ -72,7 +84,9 @@ const registerResponseSchema = z
 const loginResponseSchema = z
   .object({
     message: z.string().openapi({ example: "Login validation successful" }),
-    data: z.string().openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
+    data: z
+      .string()
+      .openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
   })
   .openapi("LoginResponse");
 
@@ -119,8 +133,8 @@ const paginationMetaSchema = z
     limit: z.number().openapi({ example: 10 }),
     totalItems: z.number().openapi({ example: 25 }),
     totalPages: z.number().openapi({ example: 3 }),
-    hashNextPage: z.boolean().openapi({ example: true }),
-    hashPrevPage: z.boolean().openapi({ example: false }),
+    hasNextPage: z.boolean().openapi({ example: true }),
+    hasPrevPage: z.boolean().openapi({ example: false }),
   })
   .openapi("PaginationMeta");
 
@@ -153,9 +167,7 @@ const categoryResponseSchema = (
 const categoryListResponseSchema = z
   .object({
     success: z.literal(true).openapi({ example: true }),
-    message: z
-      .string()
-      .openapi({ example: "Success find all category" }),
+    message: z.string().openapi({ example: "Success find all category" }),
     data: z.array(categorySchema),
     meta: paginationMetaSchema,
   })
@@ -165,9 +177,7 @@ const eventLocationResponseSchema = z
   .object({
     venueName: z.string().optional().openapi({ example: "Gelora Bung Karno" }),
     address: z.string().optional().openapi({ example: "Jakarta Pusat" }),
-    province: z
-      .object({ id: z.string(), name: z.string() })
-      .optional(),
+    province: z.object({ id: z.string(), name: z.string() }).optional(),
     regency: z.object({ id: z.string(), name: z.string() }).optional(),
     district: z.object({ id: z.string(), name: z.string() }).optional(),
     village: z.object({ id: z.string(), name: z.string() }).optional(),
@@ -189,7 +199,10 @@ const eventSchema = z
     description: z
       .string()
       .openapi({ example: "Events and live musical performances" }),
-    banner: z.string().url().openapi({ example: "https://cdn.example.com/banner.jpg" }),
+    banner: z
+      .string()
+      .url()
+      .openapi({ example: "https://cdn.example.com/banner.jpg" }),
     category: z
       .union([z.string(), categorySchema])
       .openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
@@ -212,6 +225,56 @@ const eventListResponseSchema = z
     meta: paginationMetaSchema,
   })
   .openapi("EventListResponse");
+
+const ticketSchema = z
+  .object({
+    _id: z.string().openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
+    name: z.string().openapi({ example: "Early Bird - VIP Access" }),
+    events: z
+      .union([z.string(), eventSchema])
+      .openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
+    price: z.number().openapi({ example: 150000 }),
+    quantity: z.number().openapi({ example: 100 }),
+    description: z
+      .string()
+      .openapi({ example: "Includes front-row seating and merchandise." }),
+    createdAt: z.string().datetime().optional(),
+    updatedAt: z.string().datetime().optional(),
+  })
+  .openapi("Ticket");
+
+const ticketListResponseSchema = z
+  .object({
+    success: z.literal(true).openapi({ example: true }),
+    message: z.string().openapi({ example: "Ticket find all successfully" }),
+    data: z.object({
+      data: z.array(ticketSchema),
+      meta: paginationMetaSchema,
+    }),
+  })
+  .openapi("TicketListResponse");
+
+const bannerSchema = z
+  .object({
+    _id: z.string().openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
+    title: z.string().openapi({ example: "Summer Tech Music Festival 2026" }),
+    image: z.string().openapi({
+      example: "banners/38478785-eae1-41ad-a4df-184b1b4554e7.png",
+    }),
+    isShow: z.boolean().openapi({ example: true }),
+    createdAt: z.string().datetime().optional(),
+    updatedAt: z.string().datetime().optional(),
+  })
+  .openapi("Banner");
+
+const bannerListResponseSchema = z
+  .object({
+    success: z.literal(true).openapi({ example: true }),
+    message: z.string().openapi({ example: "Banners retrieved successfully" }),
+    data: z.array(bannerSchema),
+    meta: paginationMetaSchema,
+  })
+  .openapi("BannerListResponse");
 
 const bearerSecurity = [{ bearerAuth: [] }];
 const jsonBody = (schema: z.ZodType) => ({
@@ -545,7 +608,8 @@ registry.registerPath({
       content: { "application/json": { schema: errorResponseSchema } },
     },
     409: {
-      description: "An event with the exact same name and start date already exists",
+      description:
+        "An event with the exact same name and start date already exists",
       content: { "application/json": { schema: errorResponseSchema } },
     },
     422: {
@@ -560,6 +624,8 @@ registry.registerPath({
   path: "/events",
   tags: ["Event"],
   summary: "Get all events",
+  description:
+    "Retrieve paginated events with optional text, category, featured, online, and publication-status filters. Boolean filters accept true or false.",
   request: {
     query: eventQuerySchema,
   },
@@ -667,7 +733,8 @@ registry.registerPath({
       content: { "application/json": { schema: errorResponseSchema } },
     },
     409: {
-      description: "Another event with the exact same name and start date already exists",
+      description:
+        "Another event with the exact same name and start date already exists",
       content: { "application/json": { schema: errorResponseSchema } },
     },
     422: {
@@ -712,6 +779,355 @@ registry.registerPath({
   },
 });
 
+registry.registerPath({
+  method: "post",
+  path: "/tickets",
+  tags: ["Ticket"],
+  summary: "Create a ticket tier",
+  security: bearerSecurity,
+  request: jsonBody(createTicketSchema),
+  responses: {
+    201: {
+      description: "Ticket created successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Ticket created successfully",
+            "CreateTicketResponse",
+            ticketSchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "Selected event does not exists",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/tickets",
+  tags: ["Ticket"],
+  summary: "Get all tickets",
+  request: { query: ticketQuerySchema },
+  responses: {
+    200: {
+      description: "Tickets retrieved successfully",
+      content: { "application/json": { schema: ticketListResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/tickets/{id}",
+  tags: ["Ticket"],
+  summary: "Get one ticket",
+  request: { params: idParamsSchema },
+  responses: {
+    200: {
+      description: "Ticket retrieved successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Ticket retrieved successfully",
+            "FindTicketResponse",
+            ticketSchema,
+          ),
+        },
+      },
+    },
+    404: {
+      description: "Ticket not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/tickets/{eventId}/events",
+  tags: ["Ticket"],
+  summary: "Get tickets for an event",
+  request: { params: eventIdParamSchema },
+  responses: {
+    200: {
+      description: "Tickets retrieved successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Ticket retrieved successfully",
+            "FindTicketsByEventResponse",
+            z.array(ticketSchema),
+          ),
+        },
+      },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/tickets/{id}",
+  tags: ["Ticket"],
+  summary: "Update a ticket",
+  security: bearerSecurity,
+  request: {
+    params: idParamsSchema,
+    ...jsonBody(updateTicketSchema),
+  },
+  responses: {
+    200: {
+      description: "Ticket updated successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Success update ticket",
+            "UpdateTicketResponse",
+            ticketSchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "Ticket not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/tickets/{id}",
+  tags: ["Ticket"],
+  summary: "Delete a ticket",
+  request: { params: idParamsSchema },
+  responses: {
+    200: {
+      description: "Ticket deleted successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Ticket delete successfully",
+            "DeleteTicketResponse",
+            ticketSchema,
+          ),
+        },
+      },
+    },
+    404: {
+      description: "Ticket not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/banners",
+  tags: ["Banner"],
+  summary: "Create a banner",
+  security: bearerSecurity,
+  request: jsonBody(createBannerSchema),
+  responses: {
+    201: {
+      description: "Banner created successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Banner created successfully",
+            "CreateBannerResponse",
+            bannerSchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/banners",
+  tags: ["Banner"],
+  summary: "Get all banners",
+  request: { query: bannerQuerySchema },
+  responses: {
+    200: {
+      description: "Banners retrieved successfully",
+      content: { "application/json": { schema: bannerListResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/banners/{id}",
+  tags: ["Banner"],
+  summary: "Get one banner",
+  request: { params: idParamsSchema },
+  responses: {
+    200: {
+      description: "Banner retrieved successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Banner retrieved successfully",
+            "FindBannerResponse",
+            bannerSchema,
+          ),
+        },
+      },
+    },
+    404: {
+      description: "Banner not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/banners/{id}",
+  tags: ["Banner"],
+  summary: "Update a banner",
+  security: bearerSecurity,
+  request: {
+    params: idParamsSchema,
+    ...jsonBody(updateBannerSchema),
+  },
+  responses: {
+    200: {
+      description: "Banner updated successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Banner updated successfully",
+            "UpdateBannerResponse",
+            bannerSchema,
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "Banner not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/banners/{id}",
+  tags: ["Banner"],
+  summary: "Delete a banner",
+  security: bearerSecurity,
+  request: { params: idParamsSchema },
+  responses: {
+    200: {
+      description: "Banner deleted successfully",
+      content: {
+        "application/json": {
+          schema: categoryResponseSchema(
+            "Banner deleted successfully",
+            "DeleteBannerResponse",
+            z.null(),
+          ),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "Banner not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions);
   return generator.generateDocument({
@@ -730,6 +1146,8 @@ export function generateOpenApiDocument() {
       { name: "Upload", description: "Azure Blob upload endpoints" },
       { name: "Category", description: "Category management endpoints" },
       { name: "Event", description: "Event management endpoints" },
+      { name: "Ticket", description: "Ticket management endpoints" },
+      { name: "Banner", description: "Banner management endpoints" },
     ],
   });
 }

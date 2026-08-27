@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { objectIdSchema } from "../../validations/common-validation";
 
+const booleanQuerySchema = z
+  .union([z.boolean(), z.enum(["true", "false"])])
+  .transform((val) => val === true || val === "true");
+
 const coordinatesSchema = z
   .object({
     lat: z.coerce.number().default(0),
@@ -112,6 +116,22 @@ export const eventQuerySchema = z
       .trim()
       .optional()
       .openapi({ example: "rock", description: "Search keyword" }),
+    category: objectIdSchema.optional().openapi({
+      example: "64f1a2b3c4d5e6f7g8h9i0j1",
+      description: "Referenced Category MongoDB ObjectId",
+    }),
+    isFeatured: booleanQuerySchema.optional().openapi({
+      example: true,
+      description: "Filter by featured status",
+    }),
+    isOnline: booleanQuerySchema.optional().openapi({
+      example: true,
+      description: "Filter by online/offline event format",
+    }),
+    isPublish: booleanQuerySchema.optional().openapi({
+      example: true,
+      description: "Filter by publication status",
+    }),
   })
   .openapi("EventQueryRequest");
 

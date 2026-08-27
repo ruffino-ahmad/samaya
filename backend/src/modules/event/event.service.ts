@@ -1,12 +1,12 @@
 import { Errors } from "ds-express-errors";
 import CategoryModel from "../category/category-model";
-import type { IEvent } from "./event-model";
+import type { IEvent } from "./event.model";
 import type {
   CreateEventInput,
   EventQueryInput,
   UpdateEventInput,
-} from "./event-validation";
-import EventModel from "./event-model";
+} from "./event.validation";
+import EventModel from "./event.model";
 import { resolvingUniqueSlug } from "../../utils/slug";
 import { escapeRegex } from "../../utils/regex";
 
@@ -52,7 +52,8 @@ const create = async ({
 };
 
 const findAll = async (query: EventQueryInput) => {
-  const { page, limit, search } = query;
+  const { page, limit, search, category, isFeatured, isOnline, isPublish } =
+    query;
   const skip = (page - 1) * limit;
 
   const filter = {
@@ -61,6 +62,22 @@ const findAll = async (query: EventQueryInput) => {
         $regex: escapeRegex(search),
         $options: "i",
       },
+    }),
+
+    ...(category && {
+      category,
+    }),
+
+    ...(typeof isFeatured === "boolean" && {
+      isFeatured,
+    }),
+
+    ...(typeof isOnline === "boolean" && {
+      isOnline,
+    }),
+
+    ...(typeof isPublish === "boolean" && {
+      isPublish,
     }),
   };
 

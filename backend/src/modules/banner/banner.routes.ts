@@ -5,7 +5,11 @@ import authMiddleware from "../../middlewares/auth-middleware";
 import aclMiddleware from "../../middlewares/acl-middleware";
 import { validate } from "../../middlewares/validate";
 import { ROLES } from "../../utils/constant";
-import { bannerQuerySchema, updateBannerSchema } from "./banner.validation";
+import {
+  bannerQuerySchema,
+  createBannerSchema,
+  updateBannerSchema,
+} from "./banner.validation";
 import { idParamsSchema } from "../../validations/common-validation";
 
 const router = express.Router();
@@ -13,6 +17,7 @@ const router = express.Router();
 router.post(
   "/",
   [authMiddleware, aclMiddleware([ROLES.ADMIN])],
+  validate(createBannerSchema, "body"),
   bannerController.create,
 );
 

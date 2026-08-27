@@ -1,5 +1,5 @@
 import slugify from "slugify";
-import EventModel from "../modules/event/event-model";
+import EventModel from "../modules/event/event.model";
 
 export const generateBaseSlug = (text: string): string => {
   const formatted = slugify(text, {
