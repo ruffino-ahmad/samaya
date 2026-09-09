@@ -18,7 +18,7 @@ import {
   type UploadFoldertype,
 } from "./upload.validation";
 import path from "path";
-import type { ROLES } from "../../utils/constant";
+import type { Role, ROLES } from "../../utils/constant";
 import { Errors } from "ds-express-errors";
 
 const blobServiceClient = BlobServiceClient.fromConnectionString(
@@ -42,7 +42,7 @@ interface GenerateUploadUrlParams {
   fileName: string;
   contentType: string;
   folder: UploadFoldertype;
-  userRole: ROLES;
+  userRole: Role;
 }
 
 interface GenerateUploadUrlResult {

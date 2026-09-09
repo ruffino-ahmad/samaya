@@ -8,12 +8,12 @@ import {
 } from "./upload.validation";
 import { Errors } from "ds-express-errors";
 import type { IReqUser } from "../../middlewares/auth-middleware";
-import type { ROLES } from "../../utils/constant";
+import type { Role } from "../../utils/constant";
 import sendResponse, { HTTPStatusCode } from "../../utils/response";
 
 const requestUploadUrl = async (req: IReqUser, res: Response) => {
   const { fileName, contentType, folder } = req.body as RequestUploadUrlInput;
-  const userRole = req.user?.role as ROLES;
+  const userRole = req.user?.role as Role;
 
   const result = await uploadService.generateUploadUrl({
     fileName,
