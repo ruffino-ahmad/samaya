@@ -1,18 +1,23 @@
-import type { Model, ObjectId } from "mongoose";
+import type { Model, Types } from "mongoose";
 import mongoose, { Schema } from "mongoose";
-import { ORDER_STATUS, type TypeVoucher } from "../../utils/constant";
+import { ORDER_STATUS } from "../../utils/constant";
 import type { TypeResponseMidtrans } from "../../utils/payment";
 
+export type TypeVoucher = {
+  voucherId: string;
+  isPrint: boolean;
+};
+
 export interface Order {
-  createdBy: ObjectId;
-  events: ObjectId;
-  ticket: ObjectId;
+  createdBy: Types.ObjectId;
+  events: Types.ObjectId;
+  ticket: Types.ObjectId;
   quantity: number;
   total: number;
   status: string;
   payment: TypeResponseMidtrans;
   orderId: string;
-  vouchers: TypeVoucher[];
+  vouchers?: TypeVoucher[];
 }
 
 const OrderSchema = new Schema<Order>(
@@ -79,7 +84,6 @@ const OrderSchema = new Schema<Order>(
   },
 ).index({ orderId: "text" });
 
-export const OrderModel: Model<Order> = mongoose.model<Order>(
-  "Order",
-  OrderSchema,
-);
+const OrderModel: Model<Order> = mongoose.model<Order>("Order", OrderSchema);
+
+export default OrderModel;

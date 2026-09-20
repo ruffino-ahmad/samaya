@@ -17,8 +17,11 @@ router.post(
   validate(registerValidateSchema),
   authController.register,
 );
+
 router.post("/login", validate(loginValidateSchema), authController.login);
+
 router.get("/me", authMiddleware, authController.me);
+
 router.post(
   "/activation",
   validate(activationCodeSchema),

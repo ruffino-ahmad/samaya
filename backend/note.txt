@@ -1,0 +1,3 @@
+lakukan di service dan bukan di middleware mongoose
+- buat order id dengan getId
+- buat payment dengan createLink

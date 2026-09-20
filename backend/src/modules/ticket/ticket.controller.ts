@@ -32,7 +32,8 @@ const findAll = async (req: IReqUser, res: Response) => {
   return sendResponse(res, {
     statusCode: HTTPStatusCode.OK,
     message: "Ticket find all successfully",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 };
 

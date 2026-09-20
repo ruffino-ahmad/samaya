@@ -9,10 +9,5 @@ export const ORDER_STATUS = {
   CANCELLED: "cancelled",
 } as const;
 
-export type TypeVoucher = {
-  voucherId: string;
-  isPrint: boolean;
-};
-
 export type Role = (typeof ROLES)[keyof typeof ROLES];
 export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
