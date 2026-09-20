@@ -8,7 +8,11 @@ import {
   activationCodeSchema,
   loginValidateSchema,
   registerValidateSchema,
+  updatePasswordValidateSchema,
+  updateProfileValidateSchema,
 } from "./auth-validation";
+import aclMiddleware from "../../middlewares/acl-middleware.js";
+import { ROLES } from "../../utils/constant.js";
 
 const router = express.Router();
 
@@ -26,6 +30,20 @@ router.post(
   "/activation",
   validate(activationCodeSchema),
   authController.activationAccount,
+);
+
+router.patch(
+  "/update-profile",
+  [authMiddleware, aclMiddleware([ROLES.MEMBER])],
+  validate(updateProfileValidateSchema),
+  authController.updateProfile,
+);
+
+router.patch(
+  "/update-password",
+  [authMiddleware, aclMiddleware([ROLES.MEMBER])],
+  validate(updatePasswordValidateSchema),
+  authController.updatePassword,
 );
 
 export default router;

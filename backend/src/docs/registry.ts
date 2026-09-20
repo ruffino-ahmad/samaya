@@ -8,6 +8,8 @@ import {
   activationCodeSchema,
   loginValidateSchema,
   registerValidateSchema,
+  updatePasswordValidateSchema,
+  updateProfileValidateSchema,
 } from "../modules/authentication/auth-validation";
 import {
   confirmUploadSchema,
@@ -482,6 +484,72 @@ registry.registerPath({
     },
     400: {
       description: "Invalid or expired activation code",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/auth/update-profile",
+  tags: ["Authentication"],
+  summary: "Update user profile",
+  security: bearerSecurity,
+  request: jsonBody(updateProfileValidateSchema),
+  responses: {
+    200: {
+      description: "Profile update successful",
+      content: { "application/json": { schema: profileResponseSchema } },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "User not found",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    422: {
+      description: "Validation failed",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/auth/update-password",
+  tags: ["Authentication"],
+  summary: "Update user password",
+  security: bearerSecurity,
+  request: jsonBody(updatePasswordValidateSchema),
+  responses: {
+    200: {
+      description: "Password update successful",
+      content: { "application/json": { schema: profileResponseSchema } },
+    },
+    400: {
+      description: "Current password is incorrect",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    401: {
+      description: "Unauthorized access",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    403: {
+      description: "You do not have permission to access this resource",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    404: {
+      description: "User not found",
       content: { "application/json": { schema: errorResponseSchema } },
     },
     422: {

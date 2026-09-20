@@ -1,3 +1,4 @@
+import { profile } from "node:console";
 import { z } from "zod";
 
 export const registerValidateSchema = z
@@ -57,6 +58,44 @@ export const activationCodeSchema = z
   })
   .openapi("ActivationCodeRequest");
 
+export const updateProfileValidateSchema = z.object({
+  fullname: z
+    .string()
+    .min(3, { message: "Fullname must be at least 3 characters long" })
+    .optional()
+    .openapi({ example: "Ruffino Ahmad Noor" }),
+  profilePicture: z
+    .string()
+    .url({ message: "Invalid URL for profile picture" })
+    .optional()
+    .openapi({ example: "https://example.com/profile.jpg" }),
+});
+
+export const updatePasswordValidateSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(6, {
+        message: "Current password must be at least 6 characters long",
+      })
+      .openapi({ example: "currentPassword123" }),
+    newPassword: z
+      .string()
+      .min(6, { message: "New password must be at least 6 characters long" })
+      .openapi({ example: "newPassword123" }),
+    confirmNewPassword: z
+      .string()
+      .min(6, {
+        message: "Confirm new password must be at least 6 characters long",
+      })
+      .openapi({ example: "newPassword123" }),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "New passwords do not match",
+    path: ["confirmNewPassword"],
+  })
+  .openapi("UpdatePasswordRequest");
+
 export const registerResponseSchema = z
   .object({
     id: z.string().openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
@@ -95,3 +134,5 @@ export type RegisterInput = z.infer<typeof registerValidateSchema>;
 export type CreateUserInput = Omit<RegisterInput, "confirmPassword">;
 export type LoginInput = z.infer<typeof loginValidateSchema>;
 export type ActivationCodeInput = z.infer<typeof activationCodeSchema>;
+export type UpdateProfileInput = z.infer<typeof updateProfileValidateSchema>;
+export type UpdatePasswordInput = z.infer<typeof updatePasswordValidateSchema>;

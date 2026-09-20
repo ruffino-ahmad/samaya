@@ -6,6 +6,8 @@ import {
   type ActivationCodeInput,
   type LoginInput,
   type RegisterInput,
+  type UpdatePasswordInput,
+  type UpdateProfileInput,
 } from "./auth-validation.js";
 import type { IReqUser } from "../../middlewares/auth-middleware.js";
 import sendResponse, { HTTPStatusCode } from "../../utils/response.js";
@@ -64,4 +66,37 @@ const activationAccount = async (req: Request, res: Response) => {
   });
 };
 
-export default { register, login, me, activationAccount };
+const updateProfile = async (req: IReqUser, res: Response) => {
+  const payload = req.body as UpdateProfileInput;
+  const userId = req.user?.id as unknown as string;
+
+  const result = await authService.updateProfile({ payload, userId });
+
+  return sendResponse(res, {
+    statusCode: HTTPStatusCode.OK,
+    message: "Profile update successful",
+    data: result,
+  });
+};
+
+const updatePassword = async (req: IReqUser, res: Response) => {
+  const payload = req.body as UpdatePasswordInput;
+  const userId = req.user?.id as unknown as string;
+
+  const result = await authService.updatePassword({ payload, userId });
+
+  return sendResponse(res, {
+    statusCode: HTTPStatusCode.OK,
+    message: "Password update successful",
+    data: result,
+  });
+};
+
+export default {
+  register,
+  login,
+  me,
+  activationAccount,
+  updateProfile,
+  updatePassword,
+};
