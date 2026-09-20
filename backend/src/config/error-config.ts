@@ -1,10 +1,14 @@
-// src/config/error.config.ts
 import { setConfig, AppError } from "ds-express-errors";
 import { ZodError } from "zod";
 import mongoose from "mongoose";
+import { type Request } from "express";
 
-// Extend AppError biar punya property `details` yang type-safe
-class ValidationAppError extends AppError {
+interface FormatErrorOptions {
+  req: Request;
+  isDev: boolean;
+}
+
+export class ValidationAppError extends AppError {
   details: { field: string; message: string }[];
 
   constructor(
@@ -19,12 +23,11 @@ class ValidationAppError extends AppError {
 
 export function setupErrorHandling() {
   setConfig({
-    needMappers: ["zod", "mongoose"],
     devEnvironments: ["development", "local"],
 
     customMappers: [
-      // Mapper untuk ZodError -> kasih detail per-field
-      (err: any) => {
+      // 1. Zod Validation
+      (err: unknown) => {
         if (err instanceof ZodError) {
           const details = err.issues.map((issue) => ({
             field: issue.path.join("."),
@@ -35,8 +38,8 @@ export function setupErrorHandling() {
         }
       },
 
-      // Mapper untuk Mongoose ValidationError -> kasih detail per-field
-      (err: any) => {
+      // 2. Mongoose Schema Validation
+      (err: unknown) => {
         if (err instanceof mongoose.Error.ValidationError) {
           const details = Object.values(err.errors).map((e: any) => ({
             field: e.path,
@@ -46,21 +49,48 @@ export function setupErrorHandling() {
           return new ValidationAppError("Validation failed", 422, details);
         }
       },
+
+      // 3. Mongoose CastError (invalid ObjectId)
+      (err: unknown) => {
+        if (err instanceof mongoose.Error.CastError) {
+          return new AppError(`Invalid ${err.path}: ${err.value}`, 400, true);
+        }
+      },
+
+      // 4. Mongoose Duplicate Key Error (Code 11000)
+      (err: any) => {
+        if (err.code === 11000 && err.keyValue) {
+          const field = Object.keys(err.keyValue)[0];
+          return new AppError(`${field} already exists`, 400, true);
+        }
+      },
+
+      // 5. JWT Errors
+      (err: any) => {
+        if (err.name === "JsonWebTokenError") {
+          return new AppError("Invalid token", 401, true);
+        }
+        if (err.name === "TokenExpiredError") {
+          return new AppError("Token has expired", 401, true);
+        }
+      },
     ],
 
-    formatError: (error: any, { req, isDev }) => {
-      const statusCode = error instanceof AppError ? error.statusCode : 500;
-      const isOperational = error instanceof AppError && error.isOperational;
+    formatError: (
+      error: Error | AppError,
+      { req, isDev }: FormatErrorOptions,
+    ) => {
+      const isAppError = error instanceof AppError;
+      const statusCode = isAppError ? error.statusCode : 500;
+      const isOperational = isAppError ? error.isOperational : false;
 
-      const base: any = {
+      const base: Record<string, unknown> = {
         success: false,
         code: statusCode,
         status: isOperational ? "fail" : "error",
-        message: isDev
+        message: isOperational
           ? error.message
-          : isOperational
-            ? error.message
-            : "Something went wrong. Please try again later.",
+          : "Something went wrong. Please try again later.",
       };
 
       // Cuma tambahin `data` kalau error-nya emang punya detail (Zod/Mongoose)
@@ -70,6 +100,8 @@ export function setupErrorHandling() {
 
       if (isDev) {
         base.debug = {
+          name: error.name,
+          message: error.message,
           method: req.method,
           url: req.originalUrl,
           stack: error.stack,

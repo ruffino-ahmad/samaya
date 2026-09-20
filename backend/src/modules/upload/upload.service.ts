@@ -1,10 +1,12 @@
+import path from "path";
+import { randomUUID } from "crypto";
+
 import {
   BlobServiceClient,
   generateBlobSASQueryParameters,
   BlobSASPermissions,
   StorageSharedKeyCredential,
 } from "@azure/storage-blob";
-import { randomUUID } from "crypto";
 import {
   AZURE_STORAGE_CONNECTION_STRING,
   AZURE_STORAGE_ACCOUNT_NAME,
@@ -15,11 +17,12 @@ import {
   ALLOWED_MIME_TYPES,
   FOLDER_ROLE_PERMISSIONS,
   MAX_FILE_SIZE_BYTES,
-  type UploadFoldertype,
 } from "./upload.validation";
-import path from "path";
-import type { Role, ROLES } from "../../utils/constant";
 import { Errors } from "ds-express-errors";
+import type {
+  GenerateUploadUrlParams,
+  GenerateUploadUrlResult,
+} from "./upload.interface.js";
 
 const blobServiceClient = BlobServiceClient.fromConnectionString(
   AZURE_STORAGE_CONNECTION_STRING,
@@ -36,19 +39,6 @@ const sharedKeyCredential = new StorageSharedKeyCredential(
 
 export async function ensureContainerExists(): Promise<void> {
   await containerClient.createIfNotExists();
-}
-
-interface GenerateUploadUrlParams {
-  fileName: string;
-  contentType: string;
-  folder: UploadFoldertype;
-  userRole: Role;
-}
-
-interface GenerateUploadUrlResult {
-  uploadUrl: string;
-  blobName: string;
-  expiresAt: Date;
 }
 
 const generateUploadUrl = async (
