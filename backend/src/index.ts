@@ -16,7 +16,7 @@ import {
 
 import connectToDatabase from "./utils/database";
 import { PORT } from "./utils/env.js";
-import { setupErrorHandling } from "./config/error-config.js";
+import { setupErrorHandling } from "./config/error.config.js";
 
 async function startServer() {
   try {

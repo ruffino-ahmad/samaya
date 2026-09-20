@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import RegionModel from "../../modules/region/region-model";
+import RegionModel from "./region-model";
 import type {
   findByCityQueryInput,
   IdParamRegionInput,

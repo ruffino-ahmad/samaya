@@ -7,7 +7,7 @@ import type {
   UpdateTicketInput,
 } from "./ticket.validation";
 import EventModel from "../event/event.model";
-import type { IdParamInput } from "../../validations/common-validation";
+import type { IdParamInput } from "../../validations/common.validation";
 
 interface UpdateTicketArgs {
   id: string;

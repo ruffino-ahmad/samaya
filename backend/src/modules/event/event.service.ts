@@ -1,11 +1,11 @@
 import { Errors } from "ds-express-errors";
-import CategoryModel from "../category/category-model";
+import CategoryModel from "../category/category.model";
 import type { IEvent } from "./event.model";
 import type { EventQueryInput } from "./event.validation";
 import EventModel from "./event.model";
 import { resolvingUniqueSlug } from "../../utils/slug";
 import { escapeRegex } from "../../utils/regex";
-import type { CreateEventArgs, UpdateEventArgs } from "./event-interface.js";
+import type { CreateEventArgs, UpdateEventArgs } from "./event.interface.js";
 
 const create = async ({
   payload,

@@ -10,7 +10,7 @@ import {
   registerValidateSchema,
   updatePasswordValidateSchema,
   updateProfileValidateSchema,
-} from "../modules/authentication/auth-validation";
+} from "../modules/authentication/auth.validation";
 import {
   confirmUploadSchema,
   requestUploadUrlSchema,
@@ -19,7 +19,7 @@ import {
   categoryQuerySchema,
   createCategorySchema,
   updateCategorySchema,
-} from "../modules/category/category-validation";
+} from "../modules/category/category.validation";
 import {
   createEventSchema,
   eventQuerySchema,
@@ -29,7 +29,7 @@ import {
   idParamsSchema,
   eventIdParamSchema,
   slugParamSchema,
-} from "../validations/common-validation";
+} from "../validations/common.validation";
 import {
   createTicketSchema,
   ticketQuerySchema,
@@ -289,9 +289,12 @@ const bannerListResponseSchema = z
 
 const orderPaymentSchema = z
   .object({
-    token: z.string().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
-    redirect_url: z.string().url().openapi({ 
-      example: "https://app.sandbox.midtrans.com/snap/v3/redirection/a1b2c3d4-e5f6-7890" 
+    token: z
+      .string()
+      .openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+    redirect_url: z.string().url().openapi({
+      example:
+        "https://app.sandbox.midtrans.com/snap/v3/redirection/a1b2c3d4-e5f6-7890",
     }),
   })
   .openapi("OrderPayment");
@@ -307,18 +310,20 @@ const orderSchema = z
   .object({
     _id: z.string().openapi({ example: "64f1a2b3c4d5e6f7g8h9i0j1" }),
     orderId: z.string().openapi({ example: "ORDER-ABC12" }),
-    createdBy: z.union([z.string(), userSchema]).openapi({ 
-      example: "64f1a2b3c4d5e6f7g8h9i0j1" 
+    createdBy: z.union([z.string(), userSchema]).openapi({
+      example: "64f1a2b3c4d5e6f7g8h9i0j1",
     }),
-    events: z.union([z.string(), eventSchema]).openapi({ 
-      example: "64f1a2b3c4d5e6f7g8h9i0j1" 
+    events: z.union([z.string(), eventSchema]).openapi({
+      example: "64f1a2b3c4d5e6f7g8h9i0j1",
     }),
-    ticket: z.union([z.string(), ticketSchema]).openapi({ 
-      example: "64f1a2b3c4d5e6f7g8h9i0j1" 
+    ticket: z.union([z.string(), ticketSchema]).openapi({
+      example: "64f1a2b3c4d5e6f7g8h9i0j1",
     }),
     quantity: z.number().openapi({ example: 2 }),
     total: z.number().openapi({ example: 300000 }),
-    status: z.enum(["pending", "completed", "cancelled"]).openapi({ example: "pending" }),
+    status: z
+      .enum(["pending", "completed", "cancelled"])
+      .openapi({ example: "pending" }),
     payment: orderPaymentSchema,
     vouchers: z.array(orderVoucherSchema).optional(),
     createdAt: z.string().datetime().optional(),
@@ -1355,7 +1360,8 @@ registry.registerPath({
       content: { "application/json": { schema: errorResponseSchema } },
     },
     409: {
-      description: "Ticket sold out, another user purchased last available tickets",
+      description:
+        "Ticket sold out, another user purchased last available tickets",
       content: { "application/json": { schema: errorResponseSchema } },
     },
     422: {
@@ -1528,7 +1534,8 @@ registry.registerPath({
       },
     },
     400: {
-      description: "Order cannot be set to pending (already completed/cancelled/pending)",
+      description:
+        "Order cannot be set to pending (already completed/cancelled/pending)",
       content: { "application/json": { schema: errorResponseSchema } },
     },
     401: {
@@ -1781,10 +1788,12 @@ registry.registerPath({
           schema: categoryResponseSchema(
             "Success get region by city name",
             "SearchRegionResponse",
-            z.array(z.object({
-              id: z.number().openapi({ example: 3171 }),
-              name: z.string().openapi({ example: "Jakarta Pusat" }),
-            })),
+            z.array(
+              z.object({
+                id: z.number().openapi({ example: 3171 }),
+                name: z.string().openapi({ example: "Jakarta Pusat" }),
+              }),
+            ),
           ),
         },
       },

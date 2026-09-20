@@ -1,17 +1,17 @@
 import express from "express";
-import authMiddleware from "../../middlewares/auth-middleware";
+import authMiddleware from "../../middlewares/auth.middleware";
 import { validate } from "../../middlewares/validate";
 import {
   categoryQuerySchema,
   createCategorySchema,
   updateCategorySchema,
-} from "./category-validation";
-import categoryController from "./category-controller";
+} from "./category.validation";
+import categoryController from "./category.controller";
 import {
   idParamsSchema,
   slugParamSchema,
-} from "../../validations/common-validation";
-import aclMiddleware from "../../middlewares/acl-middleware";
+} from "../../validations/common.validation";
+import aclMiddleware from "../../middlewares/acl.middleware";
 import { ROLES } from "../../utils/constant";
 
 const router = express.Router();

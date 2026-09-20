@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 
-import authService from "./auth-services.js";
+import authService from "./auth.services.js";
 
 import {
   type ActivationCodeInput,
@@ -8,8 +8,8 @@ import {
   type RegisterInput,
   type UpdatePasswordInput,
   type UpdateProfileInput,
-} from "./auth-validation.js";
-import type { IReqUser } from "../../middlewares/auth-middleware.js";
+} from "./auth.validation.js";
+import type { IReqUser } from "../../middlewares/auth.middleware.js";
 import sendResponse, { HTTPStatusCode } from "../../utils/response.js";
 
 const register = async (req: Request, res: Response) => {

@@ -1,5 +1,5 @@
-import UserModel from "../user/user-model.js";
-import type { CreateUserInput, LoginInput } from "./auth-validation.js";
+import UserModel from "../user/user.model.js";
+import type { CreateUserInput, LoginInput } from "./auth.validation.js";
 import { comparePassword, hashPassword } from "../../utils/hash.js";
 import { Errors } from "ds-express-errors";
 import { generateAccessToken } from "../../utils/jwt.js";
@@ -9,7 +9,7 @@ import queueClient from "../../config/queueClient.js";
 import type {
   UpdatePasswordArgs,
   UpdateProfileArgs,
-} from "./auth-interface.js";
+} from "./auth.interface.js";
 
 const register = async (payload: CreateUserInput) => {
   const { fullname, username, email, password } = payload;

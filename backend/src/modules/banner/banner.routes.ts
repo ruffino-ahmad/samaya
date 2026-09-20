@@ -1,8 +1,8 @@
 import express from "express";
 
 import bannerController from "./banner.controller";
-import authMiddleware from "../../middlewares/auth-middleware";
-import aclMiddleware from "../../middlewares/acl-middleware";
+import authMiddleware from "../../middlewares/auth.middleware";
+import aclMiddleware from "../../middlewares/acl.middleware";
 import { validate } from "../../middlewares/validate";
 import { ROLES } from "../../utils/constant";
 import {
@@ -10,7 +10,7 @@ import {
   createBannerSchema,
   updateBannerSchema,
 } from "./banner.validation";
-import { idParamsSchema } from "../../validations/common-validation";
+import { idParamsSchema } from "../../validations/common.validation";
 
 const router = express.Router();
 

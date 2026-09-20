@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { IReqUser } from "../../middlewares/auth-middleware";
+import type { IReqUser } from "../../middlewares/auth.middleware";
 import type {
   BannerQueryInput,
   CreateBannerInput,
@@ -8,7 +8,7 @@ import type {
 import bannerService from "./banner.service";
 import sendResponse, { HTTPStatusCode } from "../../utils/response";
 import ticketService from "../ticket/ticket.service";
-import type { IdParamInput } from "../../validations/common-validation";
+import type { IdParamInput } from "../../validations/common.validation";
 
 const create = async (req: IReqUser, res: Response) => {
   const payload = req.body as CreateBannerInput;

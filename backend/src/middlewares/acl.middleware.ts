@@ -1,5 +1,5 @@
 import type { Response, NextFunction } from "express";
-import type { IReqUser } from "./auth-middleware.js";
+import type { IReqUser } from "./auth.middleware.js";
 import { Errors } from "ds-express-errors";
 
 export default (roles: string[]) => {

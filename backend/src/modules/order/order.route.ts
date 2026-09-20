@@ -1,9 +1,9 @@
 import express from "express";
 import orderController from "./order.controller";
-import authMiddleware from "../../middlewares/auth-middleware";
+import authMiddleware from "../../middlewares/auth.middleware";
 import { validate } from "../../middlewares/validate";
 import { createOrderSchema, orderIdParamSchema } from "./order.validation.js";
-import aclMiddleware from "../../middlewares/acl-middleware.js";
+import aclMiddleware from "../../middlewares/acl.middleware.js";
 import { ROLES } from "../../utils/constant.js";
 
 const router = express.Router();

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { objectIdSchema } from "../../validations/common-validation";
+import { objectIdSchema } from "../../validations/common.validation";
 
 const booleanQuerySchema = z
   .union([z.boolean(), z.enum(["true", "false"])])

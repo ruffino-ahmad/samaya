@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { IReqUser } from "../../middlewares/auth-middleware";
+import type { IReqUser } from "../../middlewares/auth.middleware";
 import type { IEvent } from "./event.model";
 import type {
   CreateEventInput,
@@ -11,7 +11,7 @@ import sendResponse, { HTTPStatusCode } from "../../utils/response";
 import type {
   IdParamInput,
   SlugParamInput,
-} from "../../validations/common-validation";
+} from "../../validations/common.validation";
 
 const create = async (req: IReqUser, res: Response) => {
   const payload = req.body as CreateEventInput;

@@ -1,11 +1,11 @@
 import { ca } from "zod/v4/locales";
 import { escapeRegex } from "../../utils/regex";
-import CategoryModel, { type ICategory } from "./category-model";
+import CategoryModel, { type ICategory } from "./category.model";
 import type {
   CategoryQueryInput,
   CreateCategoryInput,
   UpdateCategoryInput,
-} from "./category-validation";
+} from "./category.validation";
 
 type CategoryFilter = Parameters<typeof CategoryModel.find>[0];
 

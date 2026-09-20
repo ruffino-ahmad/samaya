@@ -2,7 +2,7 @@ import express from "express";
 
 import uploadController from "./upload.controller";
 
-import authMiddleware from "../../middlewares/auth-middleware";
+import authMiddleware from "../../middlewares/auth.middleware";
 import { validate } from "../../middlewares/validate";
 import {
   confirmUploadSchema,

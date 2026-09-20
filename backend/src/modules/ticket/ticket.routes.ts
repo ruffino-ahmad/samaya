@@ -6,13 +6,13 @@ import {
   updateTicketSchema,
 } from "./ticket.validation";
 import ticketController from "./ticket.controller";
-import authMiddleware from "../../middlewares/auth-middleware";
-import aclMiddleware from "../../middlewares/acl-middleware";
+import authMiddleware from "../../middlewares/auth.middleware";
+import aclMiddleware from "../../middlewares/acl.middleware";
 import { ROLES } from "../../utils/constant";
 import {
   eventIdParamSchema,
   idParamsSchema,
-} from "../../validations/common-validation";
+} from "../../validations/common.validation";
 
 const router = express.Router();
 

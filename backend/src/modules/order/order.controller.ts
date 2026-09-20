@@ -1,5 +1,5 @@
 import { type Response } from "express";
-import { type IReqUser } from "../../middlewares/auth-middleware";
+import { type IReqUser } from "../../middlewares/auth.middleware";
 import orderService from "./order.service";
 import sendResponse, { HTTPStatusCode } from "../../utils/response";
 import type {

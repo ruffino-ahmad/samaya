@@ -7,7 +7,7 @@ import {
   type ConfirmUploadInput,
 } from "./upload.validation";
 import { Errors } from "ds-express-errors";
-import type { IReqUser } from "../../middlewares/auth-middleware";
+import type { IReqUser } from "../../middlewares/auth.middleware";
 import type { Role } from "../../utils/constant";
 import sendResponse, { HTTPStatusCode } from "../../utils/response";
 

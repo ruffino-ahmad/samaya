@@ -1,12 +1,12 @@
 import type { Response } from "express";
-import type { IReqUser } from "../../middlewares/auth-middleware";
-import categoryService from "./category-service";
+import type { IReqUser } from "../../middlewares/auth.middleware";
+import categoryService from "./category.service";
 import sendResponse, { HTTPStatusCode } from "../../utils/response";
 import type {
   CategoryQueryInput,
   UpdateCategoryInput,
-} from "./category-validation";
-import type { IdParamInput } from "../../validations/common-validation";
+} from "./category.validation";
+import type { IdParamInput } from "../../validations/common.validation";
 
 const create = async (req: IReqUser, res: Response) => {
   const result = await categoryService.create(req.body);

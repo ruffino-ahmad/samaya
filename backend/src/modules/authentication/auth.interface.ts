@@ -1,7 +1,7 @@
 import type {
   UpdatePasswordInput,
   UpdateProfileInput,
-} from "./auth-validation.js";
+} from "./auth.validation.js";
 
 export interface UpdateProfileArgs {
   payload: UpdateProfileInput;

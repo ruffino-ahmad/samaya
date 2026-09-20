@@ -1,17 +1,17 @@
 import express from "express";
 
-import authController from "./auth-controller";
+import authController from "./auth.controller";
 
 import { validate } from "../../middlewares/validate";
-import authMiddleware from "../../middlewares/auth-middleware";
+import authMiddleware from "../../middlewares/auth.middleware";
 import {
   activationCodeSchema,
   loginValidateSchema,
   registerValidateSchema,
   updatePasswordValidateSchema,
   updateProfileValidateSchema,
-} from "./auth-validation";
-import aclMiddleware from "../../middlewares/acl-middleware.js";
+} from "./auth.validation";
+import aclMiddleware from "../../middlewares/acl.middleware.js";
 import { ROLES } from "../../utils/constant.js";
 
 const router = express.Router();

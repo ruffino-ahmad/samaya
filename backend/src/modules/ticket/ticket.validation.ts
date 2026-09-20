@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { objectIdSchema } from "../../validations/common-validation";
+import { objectIdSchema } from "../../validations/common.validation";
 
 export const ticketBaseSchema = z.object({
   name: z
